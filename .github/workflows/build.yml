@@ -52,7 +52,7 @@ jobs:
             echo "Refusing to publish an APK signed with a throwaway key. Set the KEYSTORE_* secrets." >&2
             exit 1
           fi
-          TAG="${{ github.event.release.tag_name || github.ref_name }}"
+          TAG="${{ github.event.release.tag_name }}"
           SHA=$(sha256sum build/HomeGSearch.apk | cut -d' ' -f1)
           if gh release view "$TAG" >/dev/null 2>&1; then
             gh release upload "$TAG" build/HomeGSearch.apk --clobber
