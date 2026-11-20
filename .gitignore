@@ -1,0 +1,24 @@
+# Signing keys / secrets
+*.jks
+*.keystore
+*.p12
+*.pem
+keystore.properties
+local.properties
+
+# Build outputs & release binaries (upload these to GitHub Releases instead)
+*.apk
+*.dex
+*.idsig
+build/
+out/
+
+# Logs
+*.log
+
+# OS / editor
+Thumbs.db
+desktop.ini
+.DS_Store
+.vscode/
+.idea/

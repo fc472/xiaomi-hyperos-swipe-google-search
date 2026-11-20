@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Home Swipe-Up Google Search</string>
+    <string name="desc">桌面上滑直接開啟 Google 搜尋（鍵盤自動彈出）。Swipe up on the home screen to open Google search. Scope: com.miui.home</string>
+    <string-array name="scope">
+        <item>com.miui.home</item>
+    </string-array>
+</resources>
