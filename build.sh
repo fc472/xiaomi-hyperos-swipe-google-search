@@ -12,11 +12,12 @@
 # Without these, a throwaway key is generated in build/ (fine for testing only;
 # APKs signed with different keys cannot be installed over each other).
 set -euo pipefail
+trap 'echo "FAILED at line $LINENO: $BASH_COMMAND" >&2' ERR
 cd "$(dirname "$0")"
 
 SDK="${ANDROID_HOME:-${ANDROID_SDK_ROOT:?Set ANDROID_HOME or ANDROID_SDK_ROOT}}"
 BT="${BUILD_TOOLS:-$(ls -1 "$SDK/build-tools" | sort -V | tail -1)}"
-PLAT="${PLATFORM:-$(ls -1 "$SDK/platforms" | sort -V | tail -1)}"
+PLAT="${PLATFORM:-$(ls -1 "$SDK/platforms" | grep -E '^android-[0-9]+$' | sort -V | tail -1)}"
 B="$SDK/build-tools/$BT"
 JAR="$SDK/platforms/$PLAT/android.jar"
 echo "build-tools: $BT | platform: $PLAT"
@@ -50,11 +51,11 @@ else
     KS=build/throwaway.jks; KSPASS=android; ALIAS=throwaway; KEYPASS=android
     keytool -genkeypair -keystore "$KS" -storepass "$KSPASS" -keypass "$KEYPASS" \
         -alias "$ALIAS" -keyalg RSA -keysize 2048 -validity 10000 \
-        -dname "CN=HomeGSearch throwaway" >/dev/null 2>&1
+        -dname "CN=HomeGSearch throwaway"
 fi
 "$B/apksigner" sign --ks "$KS" --ks-pass "pass:$KSPASS" --ks-key-alias "$ALIAS" \
     --key-pass "pass:$KEYPASS" --out build/HomeGSearch.apk build/aligned.apk
-"$B/apksigner" verify --print-certs build/HomeGSearch.apk | grep -E "Signer #1 certificate (DN|SHA-256)"
+"$B/apksigner" verify --print-certs build/HomeGSearch.apk
 
 ls -l build/HomeGSearch.apk
 sha256sum build/HomeGSearch.apk
