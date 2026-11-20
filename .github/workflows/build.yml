@@ -6,6 +6,8 @@ on:
     tags: ['v*']
   pull_request:
   workflow_dispatch:
+  release:
+    types: [published]
 
 permissions:
   contents: write
@@ -42,16 +44,23 @@ jobs:
           name: HomeGSearch
           path: build/HomeGSearch.apk
 
-      - name: Create release (tags only)
-        if: startsWith(github.ref, 'refs/tags/v')
+      - name: Attach APK to release
+        if: github.event_name == 'release' || startsWith(github.ref, 'refs/tags/v')
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           if [ -z "${KEYSTORE_FILE:-}" ]; then
-            echo "Refusing to publish a release signed with a throwaway key. Set the KEYSTORE_* secrets." >&2
+            echo "Refusing to publish an APK signed with a throwaway key. Set the KEYSTORE_* secrets." >&2
             exit 1
           fi
+          TAG="${{ github.event.release.tag_name || github.ref_name }}"
           SHA=$(sha256sum build/HomeGSearch.apk | cut -d' ' -f1)
-          gh release create "$GITHUB_REF_NAME" build/HomeGSearch.apk \
-            --title "$GITHUB_REF_NAME" \
-            --notes "SHA-256 (HomeGSearch.apk): \`$SHA\`"
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" build/HomeGSearch.apk --clobber
+            BODY=$(gh release view "$TAG" --json body -q .body)
+            printf '%s\n\nSHA-256 (HomeGSearch.apk): `%s`\n' "$BODY" "$SHA" > notes.md
+            gh release edit "$TAG" --notes-file notes.md
+          else
+            gh release create "$TAG" build/HomeGSearch.apk --title "$TAG" \
+              --notes "SHA-256 (HomeGSearch.apk): \`$SHA\`"
+          fi
